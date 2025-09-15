@@ -1,6 +1,6 @@
-using MinimalApi.Dominio.DTOs;
 using Microsoft.EntityFrameworkCore;
 using MinimalApi.Infraestrutura.Db;
+using MinimalApi.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
