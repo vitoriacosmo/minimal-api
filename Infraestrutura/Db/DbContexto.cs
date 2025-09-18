@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MinimalApi.Dominio.Entidades;
+using MinimalApi.Dominio.Enuns;
 
 namespace MinimalApi.Infraestrutura.Db;
 
@@ -18,14 +19,22 @@ public class DbContexto : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Administrador>()
+         .Property(a => a.Perfil)
+         .HasConversion
+         (
+                v => v.ToString(),
+                v => Enum.Parse<Perfil>(v)
+         );
+
         modelBuilder.Entity<Administrador>().HasData
         (new Administrador
-            {
-                Id = -1,
-                Email = "administrador@teste.com",
-                Senha = "123456",
-                Perfil = "Adm"
-            }
+        {
+            Id = -1,
+            Email = "administrador@teste.com",
+            Senha = "123456",
+            Perfil = Perfil.adm
+        }
         );
     }
 
