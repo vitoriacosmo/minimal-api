@@ -1,12 +1,13 @@
-using Microsoft.EntityFrameworkCore;
-using MinimalApi.Infraestrutura.Db;
-using MinimalApi.Dominio.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using MinimalApi.Dominio.Interfaces;
-using MinimalApi.Dominio.Servicos;
-using MinimalApi.Dominio.ModelViews;
+using Microsoft.EntityFrameworkCore;
+using MinimalApi.Dominio.DTOs;
 using MinimalApi.Dominio.Entidades;
 using MinimalApi.Dominio.Enuns;
+using MinimalApi.Dominio.Interfaces;
+using MinimalApi.Dominio.ModelViews;
+using MinimalApi.Dominio.Servicos;
+using MinimalApi.Infraestrutura.Db;
+using System.Runtime.Intrinsics.Arm;
 
 #region Builder
 
@@ -42,17 +43,33 @@ app.MapPost("/administradores/login", ([FromBody] LoginDTO loginDTO, IAdministra
         return Results.Unauthorized();
 }).WithTags("Administradores");
 
-app.MapPost("/administradores", ([FromQuery] int? pagina, IAdministradorServico administradorServico) =>
+app.MapGet("/administradores", ([FromQuery] int? pagina, IAdministradorServico administradorServico) =>
 {
+    var adms = new List<AdministradorModelView>();
     var administradores = administradorServico.Todos(pagina);
-    return Results.Ok(administradores);
+    foreach (var adm in administradores)
+    {
+        adms.Add(new AdministradorModelView
+        {
+            Id = adm.Id,
+            Email = adm.Email,
+            Perfil = adm.Perfil
+        });
+    }
+
+    return Results.Ok(adms);
 }).WithTags("Administradores");
 
 app.MapGet("/administradores/{id}", ([FromRoute] int id, IAdministradorServico administradorServico) =>
 {
     var administrador = administradorServico.BuscaPorId(id);
     if (administrador == null) return Results.NotFound();
-    return Results.Ok(administrador);
+    return Results.Ok((new AdministradorModelView
+    {
+        Id = administrador.Id,
+        Email = administrador.Email,
+        Perfil = administrador.Perfil
+    }));
 }).WithTags("Administradores");
 
 app.MapPost("/administradores", ([FromBody] AdministradorDTO administradorDTO, IAdministradorServico administradorServico) =>
@@ -73,12 +90,17 @@ app.MapPost("/administradores", ([FromBody] AdministradorDTO administradorDTO, I
     {
         Email = administradorDTO.Email,
         Senha = administradorDTO.Senha,
-        Perfil = administradorDTO.Perfil ?? Perfil.editor
+        Perfil = administradorDTO.Perfil ?? Perfil.Editor
     };
 
     administradorServico.Incluir(administrador);
 
-    return Results.Created($"/administradores/{administrador.Id}", administrador);
+    return Results.Created($"/administradores/{administrador.Id}", new AdministradorModelView
+    {
+        Id = administrador.Id,
+        Email = administrador.Email,
+        Perfil = administrador.Perfil
+    });
 }).WithTags("Administradores");
 #endregion
 
